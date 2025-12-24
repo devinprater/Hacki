@@ -20,6 +20,11 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLastPage =
+        pageController.hasClients && (pageController.page ?? 0) >= 2;
+    final String advanceLabel =
+        isLastPage ? 'Finish onboarding' : 'Next page';
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Palette.transparent,
@@ -30,6 +35,7 @@ class _OnboardingViewState extends State<OnboardingView> {
             Icons.close,
             color: Palette.white,
           ),
+          tooltip: 'Close onboarding',
           onPressed: context.pop,
         ),
       ),
@@ -71,31 +77,38 @@ class _OnboardingViewState extends State<OnboardingView> {
             bottom: MediaQuery.of(context).viewPadding.bottom,
             left: Dimens.zero,
             right: Dimens.zero,
-            child: ElevatedButton(
-              onPressed: () {
-                HapticFeedbackUtil.light();
-                if (pageController.page! >= 2) {
-                  context.pop();
-                } else {
-                  throttle.run(() {
-                    pageController.nextPage(
-                      duration: AppDurations.ms600,
-                      curve: SpringCurve.underDamped,
-                    );
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                shape: const CircleBorder(),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: const EdgeInsets.all(
-                  Dimens.pt18,
+            child: Tooltip(
+              message: advanceLabel,
+              child: Semantics(
+                label: advanceLabel,
+                button: true,
+                child: ElevatedButton(
+                  onPressed: () {
+                    HapticFeedbackUtil.light();
+                    if (pageController.page! >= 2) {
+                      context.pop();
+                    } else {
+                      throttle.run(() {
+                        pageController.nextPage(
+                          duration: AppDurations.ms600,
+                          curve: SpringCurve.underDamped,
+                        );
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.all(
+                      Dimens.pt18,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.arrow_drop_down_outlined,
+                    size: TextDimens.pt36,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                 ),
-              ),
-              child: Icon(
-                Icons.arrow_drop_down_outlined,
-                size: TextDimens.pt36,
-                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ),

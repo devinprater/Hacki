@@ -137,89 +137,120 @@ class _StoriesListViewState extends State<StoriesListView>
                   : const SizedBox.shrink(),
               onMoreTapped: onMoreTapped,
               itemBuilder: (Widget child, Story story) {
-                return Slidable(
-                  key: ValueKey<Story>(story),
-                  enabled: !preferenceState.isSwipeGestureEnabled,
-                  startActionPane: ActionPane(
-                    motion: const BehindMotion(),
-                    children: <Widget>[
-                      SlidableAction(
-                        onPressed: (_) {
-                          HapticFeedbackUtil.light();
-                          context.read<PinCubit>().pinStory(story);
-                        },
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        icon: preferenceState.isComplexStoryTileEnabled
-                            ? Icons.push_pin_outlined
-                            : null,
-                        label: preferenceState.isComplexStoryTileEnabled
-                            ? null
-                            : 'Pin',
-                      ),
-                      SlidableAction(
-                        onPressed: (_) => onMoreTapped(story, context.rect),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        icon: preferenceState.isComplexStoryTileEnabled
-                            ? Icons.more_horiz
-                            : null,
-                        label: preferenceState.isComplexStoryTileEnabled
-                            ? null
-                            : 'More',
-                      ),
-                    ],
-                  ),
-                  endActionPane: ActionPane(
-                    motion: const BehindMotion(),
-                    dismissible: DismissiblePane(
-                      closeOnCancel: true,
-                      confirmDismiss: () async {
-                        mark(story);
-                        return false;
-                      },
-                      onDismissed: () {},
+                final bool isRead = state.readStoriesIds.contains(story.id);
+                final Map<CustomSemanticsAction, VoidCallback> actions =
+                    <CustomSemanticsAction, VoidCallback>{
+                  const CustomSemanticsAction(label: 'Pin story'): () {
+                    HapticFeedbackUtil.light();
+                    context.read<PinCubit>().pinStory(story);
+                  },
+                  const CustomSemanticsAction(label: 'More actions'): () =>
+                      onMoreTapped(story, context.rect),
+                  CustomSemanticsAction(
+                    label: isRead ? 'Mark unread' : 'Mark read',
+                  ): () => mark(story),
+                };
+
+                return Semantics(
+                  customSemanticsActions: actions,
+                  child: Slidable(
+                    key: ValueKey<Story>(story),
+                    enabled: !preferenceState.isSwipeGestureEnabled,
+                    startActionPane: ActionPane(
+                      motion: const BehindMotion(),
+                      children: <Widget>[
+                        Semantics(
+                          label: 'Pin story',
+                          button: true,
+                          child: SlidableAction(
+                            onPressed: (_) {
+                              HapticFeedbackUtil.light();
+                              context.read<PinCubit>().pinStory(story);
+                            },
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            icon: preferenceState.isComplexStoryTileEnabled
+                                ? Icons.push_pin_outlined
+                                : null,
+                            label: preferenceState.isComplexStoryTileEnabled
+                                ? null
+                                : 'Pin',
+                          ),
+                        ),
+                        Semantics(
+                          label: 'More actions',
+                          button: true,
+                          child: SlidableAction(
+                            onPressed: (_) => onMoreTapped(story, context.rect),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            icon: preferenceState.isComplexStoryTileEnabled
+                                ? Icons.more_horiz
+                                : null,
+                            label: preferenceState.isComplexStoryTileEnabled
+                                ? null
+                                : 'More',
+                          ),
+                        ),
+                      ],
                     ),
-                    children: <Widget>[
-                      SlidableAction(
-                        onPressed: (_) => mark(story),
-                        backgroundColor:
-                            preferenceState.isMarkReadStoriesEnabled
-                                ? Theme.of(context).colorScheme.primary
-                                : Palette.grey,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        icon: state.readStoriesIds.contains(story.id)
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                    endActionPane: ActionPane(
+                      motion: const BehindMotion(),
+                      dismissible: DismissiblePane(
+                        closeOnCancel: true,
+                        confirmDismiss: () async {
+                          mark(story);
+                          return false;
+                        },
+                        onDismissed: () {},
                       ),
-                    ],
-                  ),
-                  child: OptionalWrapper(
-                    enabled: context
-                            .read<PreferenceCubit>()
-                            .state
-                            .storyMarkingMode
-                            .shouldDetectScrollingPast &&
-                        !context.read<StoriesBloc>().hasRead(story),
-                    wrapper: (Widget child) => VisibilityDetector(
-                      key: ValueKey<int>(story.id),
-                      onVisibilityChanged: (VisibilityInfo info) {
-                        if (info.visibleFraction == 0 &&
-                            mounted &&
-                            scrollController.position.userScrollDirection ==
-                                ScrollDirection.reverse &&
-                            !state.readStoriesIds.contains(story.id)) {
-                          context
-                              .read<StoriesBloc>()
-                              .add(StoryRead(story: story));
-                        }
-                      },
+                      children: <Widget>[
+                        Semantics(
+                          label: isRead ? 'Mark unread' : 'Mark read',
+                          button: true,
+                          child: SlidableAction(
+                            onPressed: (_) => mark(story),
+                            backgroundColor:
+                                preferenceState.isMarkReadStoriesEnabled
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Palette.grey,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            icon: isRead
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                        ),
+                      ],
+                    ),
+                    child: OptionalWrapper(
+                      enabled: context
+                              .read<PreferenceCubit>()
+                              .state
+                              .storyMarkingMode
+                              .shouldDetectScrollingPast &&
+                          !context.read<StoriesBloc>().hasRead(story),
+                      wrapper: (Widget child) => VisibilityDetector(
+                        key: ValueKey<int>(story.id),
+                        onVisibilityChanged: (VisibilityInfo info) {
+                          if (info.visibleFraction == 0 &&
+                              mounted &&
+                              scrollController.position.userScrollDirection ==
+                                  ScrollDirection.reverse &&
+                              !state.readStoriesIds.contains(story.id)) {
+                            context
+                                .read<StoriesBloc>()
+                                .add(StoryRead(story: story));
+                          }
+                        },
+                        child: child,
+                      ),
                       child: child,
                     ),
-                    child: child,
                   ),
                 );
               },

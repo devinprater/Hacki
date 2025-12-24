@@ -41,6 +41,7 @@ class CustomFloatingActionButton extends StatelessWidget {
                   onLongPress: () =>
                       context.read<CommentsCubit>().scrollTo(index: 0),
                   child: FloatingActionButton.small(
+                    tooltip: 'Jump to previous root comment',
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
                     /// Randomly generated string as heroTag to prevent
@@ -69,6 +70,7 @@ class CustomFloatingActionButton extends StatelessWidget {
                     cubit.scrollTo(index: cubit.state.comments.length);
                   },
                   child: FloatingActionButton.small(
+                    tooltip: 'Jump to next root comment',
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
                     /// Same as above.

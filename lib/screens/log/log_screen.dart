@@ -36,6 +36,7 @@ class LogScreen extends StatelessWidget {
                         .whenComplete(HapticFeedbackUtil.selection);
                     context.showSnackBar(content: 'Log copied.');
                   },
+                  tooltip: 'Copy log',
                   icon: const Icon(Icons.copy),
                 ),
             ],

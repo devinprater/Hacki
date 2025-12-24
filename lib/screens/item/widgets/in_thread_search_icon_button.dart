@@ -135,6 +135,7 @@ class _InThreadSearchViewState extends State<_InThreadSearchView> {
                         Icons.close,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
+                      tooltip: 'Close search',
                       onPressed: widget.action,
                     ),
                   ],

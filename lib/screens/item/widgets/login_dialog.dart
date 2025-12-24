@@ -117,6 +117,9 @@ class _LoginDialogState extends State<LoginDialog> with ItemActionMixin {
                           ? Theme.of(context).colorScheme.primary
                           : Palette.grey,
                     ),
+                    tooltip: state.agreedToEULA
+                        ? 'Uncheck agreement'
+                        : 'Agree to end user agreement',
                     onPressed: () =>
                         context.read<AuthBloc>().add(AuthToggleAgreeToEULA()),
                   ),

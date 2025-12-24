@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hacki/blocs/auth/auth_bloc.dart';
@@ -159,23 +160,38 @@ class FavoritesScreen extends StatelessWidget {
               onTap: onItemTap,
               header: header(),
               itemBuilder: (Widget child, Item item) {
-                return Slidable(
-                  dragStartBehavior: DragStartBehavior.start,
-                  startActionPane: ActionPane(
-                    motion: const BehindMotion(),
-                    children: <Widget>[
-                      SlidableAction(
-                        onPressed: (_) {
-                          HapticFeedbackUtil.light();
-                          context.read<FavCubit>().removeFav(item.id);
-                        },
-                        backgroundColor: Palette.red,
-                        foregroundColor: Palette.white,
-                        icon: Icons.close,
-                      ),
-                    ],
+                return Semantics(
+                  customSemanticsActions: <CustomSemanticsAction,
+                      VoidCallback>{
+                    const CustomSemanticsAction(
+                      label: 'Remove from favorites',
+                    ): () {
+                      HapticFeedbackUtil.light();
+                      context.read<FavCubit>().removeFav(item.id);
+                    },
+                  },
+                  child: Slidable(
+                    dragStartBehavior: DragStartBehavior.start,
+                    startActionPane: ActionPane(
+                      motion: const BehindMotion(),
+                      children: <Widget>[
+                        Semantics(
+                          label: 'Remove from favorites',
+                          button: true,
+                          child: SlidableAction(
+                            onPressed: (_) {
+                              HapticFeedbackUtil.light();
+                              context.read<FavCubit>().removeFav(item.id);
+                            },
+                            backgroundColor: Palette.red,
+                            foregroundColor: Palette.white,
+                            icon: Icons.close,
+                          ),
+                        ),
+                      ],
+                    ),
+                    child: child,
                   ),
-                  child: child,
                 );
               },
             );

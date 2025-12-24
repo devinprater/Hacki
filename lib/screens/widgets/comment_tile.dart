@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hacki/blocs/blocs.dart';
@@ -76,225 +77,277 @@ class CommentTile extends StatelessWidget {
           final Color primaryColor = Theme.of(context).colorScheme.primary;
           final Brightness brightness = Theme.of(context).brightness;
 
+          final bool canEdit =
+              context.read<AuthBloc>().state.user.id == comment.by;
+          final Map<CustomSemanticsAction, VoidCallback> actions =
+              <CustomSemanticsAction, VoidCallback>{};
+          if (actionable) {
+            if (onReplyTapped != null) {
+              actions[const CustomSemanticsAction(label: 'Reply')] =
+                  () => onReplyTapped?.call(comment);
+            }
+            if (canEdit && onEditTapped != null) {
+              actions[const CustomSemanticsAction(label: 'Edit')] =
+                  () => onEditTapped?.call(comment);
+            }
+            if (onMoreTapped != null) {
+              actions[const CustomSemanticsAction(label: 'More actions')] = () =>
+                  onMoreTapped?.call(comment, context.rect);
+            }
+            if (onRightMoreTapped != null) {
+              actions[const CustomSemanticsAction(label: 'View ancestors')] =
+                  () => onRightMoreTapped?.call(comment);
+            }
+          }
+
           final Widget child = DeviceGestureWrapper(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Slidable(
-                  startActionPane: actionable
-                      ? ActionPane(
-                          motion: const StretchMotion(),
-                          children: <Widget>[
-                            SlidableAction(
-                              onPressed: (_) => onReplyTapped?.call(comment),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              icon: Icons.message,
-                            ),
-                            if (context.read<AuthBloc>().state.user.id ==
-                                comment.by)
-                              SlidableAction(
-                                onPressed: (_) => onEditTapped?.call(comment),
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
-                                icon: Icons.edit,
-                              ),
-                            SlidableAction(
-                              onPressed: (BuildContext context) =>
-                                  onMoreTapped?.call(
-                                comment,
-                                context.rect,
-                              ),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              icon: Icons.more_horiz,
-                            ),
-                          ],
-                        )
-                      : null,
-                  endActionPane: actionable
-                      ? ActionPane(
-                          motion: const StretchMotion(),
-                          children: <Widget>[
-                            SlidableAction(
-                              onPressed: (_) =>
-                                  onRightMoreTapped?.call(comment),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              icon: Icons.av_timer,
-                            ),
-                          ],
-                        )
-                      : null,
-                  child: InkWell(
-                    splashFactory: NoSplash.splashFactory,
-                    onTap: () {
-                      if (collapsable) {
-                        _collapse(context);
-                      } else {
-                        onTap?.call();
-                      }
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: Dimens.pt6,
-                            right: Dimens.pt6,
-                            top: Dimens.pt6,
-                          ),
-                          child: Row(
+                Semantics(
+                  customSemanticsActions:
+                      actions.isEmpty ? null : actions,
+                  child: Slidable(
+                    startActionPane: actionable
+                        ? ActionPane(
+                            motion: const StretchMotion(),
                             children: <Widget>[
-                              Text(
-                                comment.by,
-                                style: TextStyle(
-                                  color: primaryColor,
+                              Semantics(
+                                label: 'Reply',
+                                button: true,
+                                child: SlidableAction(
+                                  onPressed: (_) =>
+                                      onReplyTapped?.call(comment),
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  icon: Icons.message,
                                 ),
-                                textScaler: MediaQuery.of(context).textScaler,
                               ),
-                              if (comment.by == opUsername)
+                              if (canEdit)
+                                Semantics(
+                                  label: 'Edit',
+                                  button: true,
+                                  child: SlidableAction(
+                                    onPressed: (_) =>
+                                        onEditTapped?.call(comment),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary,
+                                    icon: Icons.edit,
+                                  ),
+                                ),
+                              Semantics(
+                                label: 'More actions',
+                                button: true,
+                                child: SlidableAction(
+                                  onPressed: (BuildContext context) =>
+                                      onMoreTapped?.call(
+                                    comment,
+                                    context.rect,
+                                  ),
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary,
+                                  icon: Icons.more_horiz,
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                    endActionPane: actionable
+                        ? ActionPane(
+                            motion: const StretchMotion(),
+                            children: <Widget>[
+                              Semantics(
+                                label: 'View ancestors',
+                                button: true,
+                                child: SlidableAction(
+                                  onPressed: (_) =>
+                                      onRightMoreTapped?.call(comment),
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary,
+                                  icon: Icons.av_timer,
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                    child: InkWell(
+                      splashFactory: NoSplash.splashFactory,
+                      onTap: () {
+                        if (collapsable) {
+                          _collapse(context);
+                        } else {
+                          onTap?.call();
+                        }
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: Dimens.pt6,
+                              right: Dimens.pt6,
+                              top: Dimens.pt6,
+                            ),
+                            child: Row(
+                              children: <Widget>[
                                 Text(
-                                  ' - OP',
+                                  comment.by,
                                   style: TextStyle(
                                     color: primaryColor,
                                   ),
-                                ),
-                              if (index != null)
-                                Text(
-                                  ' #${index! + 1}',
-                                  style: const TextStyle(
-                                    color: Palette.grey,
-                                  ),
                                   textScaler: MediaQuery.of(context).textScaler,
                                 ),
-                              if (isResponse)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 4),
-                                  child: Icon(
-                                    Icons.reply,
-                                    size: 16,
-                                    color: Palette.grey,
-                                  ),
-                                ),
-                              // Commented out for now, maybe review later.
-                              // if (!comment.dead && isNew)
-                              //   const Padding(
-                              //     padding: EdgeInsets.only(left: 4),
-                              //     child: Icon(
-                              //       Icons.sunny_snowing,
-                              //       size: 16,
-                              //       color: Palette.grey,
-                              //     ),
-                              //   ),
-                              const Spacer(),
-                              Text(
-                                prefState.displayDateFormat
-                                    .convertToString(comment.time),
-                                style: TextStyle(
-                                  color: Theme.of(context).metadataColor,
-                                ),
-                                textScaler: MediaQuery.of(context).textScaler,
-                              ),
-                            ],
-                          ),
-                        ),
-                        AnimatedSize(
-                          duration: AppDurations.ms200,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              if (actionable && state.collapsed)
-                                CenteredText(
-                                  text:
-                                      '''collapsed (${state.collapsedCount + 1})''',
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.8),
-                                )
-                              else if (comment.hidden)
-                                const CenteredText.hidden()
-                              else if (comment.deleted)
-                                const CenteredText.deleted()
-                              else if (comment.dead)
-                                const CenteredText.dead()
-                              else if (blocklistState.blocklist
-                                  .contains(comment.by))
-                                const CenteredText.blocked()
-                              else
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: Dimens.pt8,
-                                    right: Dimens.pt2,
-                                    top: Dimens.pt6,
-                                    bottom: Dimens.pt12,
-                                  ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: Semantics(
-                                      label: '''At level ${comment.level}.''',
-                                      child: ItemText(
-                                        key: ValueKey<int>(comment.id),
-                                        item: comment,
-                                        selectable: selectable,
-                                        textScaler:
-                                            MediaQuery.of(context).textScaler,
-                                        onTap: () {
-                                          if (onTap == null) {
-                                            _onTextTapped(context);
-                                          } else {
-                                            onTap!.call();
-                                          }
-                                        },
-                                      ),
+                                if (comment.by == opUsername)
+                                  Text(
+                                    ' - OP',
+                                    style: TextStyle(
+                                      color: primaryColor,
                                     ),
                                   ),
+                                if (index != null)
+                                  Text(
+                                    ' #${index! + 1}',
+                                    style: const TextStyle(
+                                      color: Palette.grey,
+                                    ),
+                                    textScaler:
+                                        MediaQuery.of(context).textScaler,
+                                  ),
+                                if (isResponse)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 4),
+                                    child: Icon(
+                                      Icons.reply,
+                                      size: 16,
+                                      color: Palette.grey,
+                                    ),
+                                  ),
+                                // Commented out for now, maybe review later.
+                                // if (!comment.dead && isNew)
+                                //   const Padding(
+                                //     padding: EdgeInsets.only(left: 4),
+                                //     child: Icon(
+                                //       Icons.sunny_snowing,
+                                //       size: 16,
+                                //       color: Palette.grey,
+                                //     ),
+                                //   ),
+                                const Spacer(),
+                                Text(
+                                  prefState.displayDateFormat
+                                      .convertToString(comment.time),
+                                  style: TextStyle(
+                                    color: Theme.of(context).metadataColor,
+                                  ),
+                                  textScaler:
+                                      MediaQuery.of(context).textScaler,
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        if (_shouldShowLoadButton(context))
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: Dimens.pt12,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: TextButton(
-                                      onPressed: () {
-                                        HapticFeedbackUtil.selection();
-                                        context.read<CommentsCubit>().loadMore(
-                                              comment: comment,
-                                            );
-                                      },
-                                      child: Text(
-                                        '''Load ${comment.kids.length} ${comment.kids.length > 1 ? 'replies' : 'reply'}''',
-                                        style: const TextStyle(
-                                          fontSize: TextDimens.pt12,
+                          AnimatedSize(
+                            duration: AppDurations.ms200,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                if (actionable && state.collapsed)
+                                  CenteredText(
+                                    text:
+                                        '''collapsed (${state.collapsedCount + 1})''',
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.8),
+                                  )
+                                else if (comment.hidden)
+                                  const CenteredText.hidden()
+                                else if (comment.deleted)
+                                  const CenteredText.deleted()
+                                else if (comment.dead)
+                                  const CenteredText.dead()
+                                else if (blocklistState.blocklist
+                                    .contains(comment.by))
+                                  const CenteredText.blocked()
+                                else
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: Dimens.pt8,
+                                      right: Dimens.pt2,
+                                      top: Dimens.pt6,
+                                      bottom: Dimens.pt12,
+                                    ),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: Semantics(
+                                        label:
+                                            '''At level ${comment.level}.''',
+                                        child: ItemText(
+                                          key: ValueKey<int>(comment.id),
+                                          item: comment,
+                                          selectable: selectable,
+                                          textScaler:
+                                              MediaQuery.of(context).textScaler,
+                                          onTap: () {
+                                            if (onTap == null) {
+                                              _onTextTapped(context);
+                                            } else {
+                                              onTap!.call();
+                                            }
+                                          },
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
-                        const Divider(
-                          height: Dimens.zero,
-                        ),
-                      ],
+                          if (_shouldShowLoadButton(context))
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: Dimens.pt12,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: () {
+                                          HapticFeedbackUtil.selection();
+                                          context
+                                              .read<CommentsCubit>()
+                                              .loadMore(
+                                                comment: comment,
+                                              );
+                                        },
+                                        child: Text(
+                                          '''Load ${comment.kids.length} ${comment.kids.length > 1 ? 'replies' : 'reply'}''',
+                                          style: const TextStyle(
+                                            fontSize: TextDimens.pt12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const Divider(
+                            height: Dimens.zero,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

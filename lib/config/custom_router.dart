@@ -7,20 +7,24 @@ import 'package:hacki/extensions/extensions.dart';
 import 'package:hacki/models/item/item.dart';
 import 'package:hacki/repositories/hacker_news_repository.dart';
 import 'package:hacki/screens/screens.dart';
+import 'package:hacki/services/services.dart';
 import 'package:hacki/styles/dimens.dart';
 
 final GoRouter router = GoRouter(
   observers: <NavigatorObserver>[
     locator.get<RouteObserver<ModalRoute<dynamic>>>(),
+    AccessibilityRouteObserver(),
   ],
   initialLocation: HomeScreen.routeName,
   routes: <RouteBase>[
     GoRoute(
       path: HomeScreen.routeName,
+      name: 'home',
       builder: (_, __) => const HomeScreen(),
       routes: <RouteBase>[
         GoRoute(
           path: ItemScreen.routeName,
+          name: 'item',
           builder: (_, GoRouterState state) {
             final ItemScreenArgs? args = state.extra as ItemScreenArgs?;
             if (args == null) {
@@ -31,6 +35,7 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: '${ItemScreen.routeName}/:itemId',
+          name: 'item-by-id',
           builder: (BuildContext context, GoRouterState state) {
             final String? itemIdStr = state.pathParameters['itemId'];
             final int? itemId = itemIdStr?.itemId;
@@ -59,10 +64,12 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: LogScreen.routeName,
+          name: 'log',
           builder: (_, __) => const LogScreen(),
         ),
         GoRoute(
           path: WebViewScreen.routeName,
+          name: 'web-view',
           builder: (_, GoRouterState state) {
             final String? link = state.extra as String?;
             if (link == null) {
@@ -75,6 +82,7 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: SubmitScreen.routeName,
+          name: 'submit',
           builder: (_, __) => BlocProvider<SubmitCubit>(
             create: (_) => SubmitCubit(),
             child: const SubmitScreen(),
@@ -82,10 +90,12 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: QrCodeScannerScreen.routeName,
+          name: 'qr-code-scanner',
           builder: (_, __) => const QrCodeScannerScreen(),
         ),
         GoRoute(
           path: QrCodeViewScreen.routeName,
+          name: 'qr-code-view',
           builder: (_, GoRouterState state) {
             final String? data = state.extra as String?;
             if (data == null) {

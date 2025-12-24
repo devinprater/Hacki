@@ -135,6 +135,7 @@ class _ReplyBoxState extends State<ReplyBox> with ItemActionMixin {
                                           Theme.of(context).colorScheme.primary,
                                       size: TextDimens.pt18,
                                     ),
+                                    tooltip: 'Quote reply',
                                     onPressed: expanded ? showTextPopup : null,
                                   ),
                                 ),
@@ -147,6 +148,9 @@ class _ReplyBoxState extends State<ReplyBox> with ItemActionMixin {
                                   color: Theme.of(context).colorScheme.primary,
                                   size: TextDimens.pt18,
                                 ),
+                                tooltip: expanded
+                                    ? 'Collapse editor'
+                                    : 'Expand editor',
                                 onPressed: () {
                                   setState(() {
                                     expanded = !expanded;
@@ -160,6 +164,7 @@ class _ReplyBoxState extends State<ReplyBox> with ItemActionMixin {
                                 Icons.close,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
+                              tooltip: 'Close editor',
                               onPressed: () {
                                 setState(() {
                                   expanded = false;
@@ -223,6 +228,7 @@ class _ReplyBoxState extends State<ReplyBox> with ItemActionMixin {
                                 Icons.send,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
+                              tooltip: 'Send reply',
                               onPressed: () {
                                 widget.onSendTapped();
                                 expanded = false;
@@ -356,6 +362,7 @@ class _ReplyBoxState extends State<ReplyBox> with ItemActionMixin {
                           color: Theme.of(context).colorScheme.primary,
                           size: TextDimens.pt18,
                         ),
+                        tooltip: 'Close',
                         onPressed: () => context.pop(),
                       ),
                     ],

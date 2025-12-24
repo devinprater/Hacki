@@ -26,7 +26,7 @@ class PinIconButton extends StatelessWidget {
           child: Transform.translate(
             offset: const Offset(2, 0),
             child: IconButton(
-              tooltip: 'Pin to home screen',
+              tooltip: pinned ? 'Unpin from home screen' : 'Pin to home screen',
               icon: CustomDescribedFeatureOverlay(
                 tapTarget: Icon(
                   pinned ? Icons.push_pin : Icons.push_pin_outlined,

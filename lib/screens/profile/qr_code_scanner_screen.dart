@@ -26,6 +26,7 @@ class _QrCodeScannerScreenState extends State<QrCodeScannerScreen> {
         actions: <Widget>[
           IconButton(
             icon: Icon(isFlashOn ? Icons.flash_off : Icons.flash_on),
+            tooltip: isFlashOn ? 'Turn off flash' : 'Turn on flash',
             onPressed: () {
               controller?.toggleFlash();
               setState(() {
@@ -35,6 +36,7 @@ class _QrCodeScannerScreenState extends State<QrCodeScannerScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.cameraswitch_outlined),
+            tooltip: 'Switch camera',
             onPressed: controller?.flipCamera,
           ),
         ],

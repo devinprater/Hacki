@@ -103,6 +103,7 @@ class _PollViewState extends State<PollView> with ItemActionMixin {
                                 HapticFeedbackUtil.light();
                                 context.read<VoteCubit>().upvote();
                               },
+                              tooltip: 'Upvote ${option.text}',
                               icon: Icon(
                                 Icons.arrow_drop_up,
                                 color: voteState.vote == Vote.up

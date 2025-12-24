@@ -1,4 +1,5 @@
 export 'app_review_service.dart';
+export 'accessibility_route_observer.dart';
 export 'caches/caches.dart';
 export 'custom_bloc_observer.dart';
 export 'fetcher.dart';

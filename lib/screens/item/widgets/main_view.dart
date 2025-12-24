@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
@@ -210,178 +211,205 @@ class _ParentItemSection extends StatelessWidget {
               child: OfflineBanner(),
             ),
           DeviceGestureWrapper(
-            child: Slidable(
-              startActionPane: ActionPane(
-                motion: const BehindMotion(),
-                children: <Widget>[
-                  SlidableAction(
-                    onPressed: (_) {
-                      HapticFeedbackUtil.light();
+            child: Semantics(
+              customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
+                const CustomSemanticsAction(label: 'Reply'): () {
+                  HapticFeedbackUtil.light();
 
-                      if (item.id !=
-                          context.read<EditCubit>().state.replyingTo?.id) {
-                        commentEditingController.clear();
-                      }
-                      context.read<EditCubit>().onReplyTapped(item);
-                    },
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    icon: Icons.message,
-                  ),
-                  SlidableAction(
-                    onPressed: (BuildContext context) =>
-                        onMoreTapped(item, context.rect),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    icon: Icons.more_horiz,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: Dimens.pt6,
-                      right: Dimens.pt6,
+                  if (item.id !=
+                      context.read<EditCubit>().state.replyingTo?.id) {
+                    commentEditingController.clear();
+                  }
+                  context.read<EditCubit>().onReplyTapped(item);
+                },
+                const CustomSemanticsAction(label: 'More actions'): () =>
+                    onMoreTapped(item, context.rect),
+              },
+              child: Slidable(
+                startActionPane: ActionPane(
+                  motion: const BehindMotion(),
+                  children: <Widget>[
+                    Semantics(
+                      label: 'Reply',
+                      button: true,
+                      child: SlidableAction(
+                        onPressed: (_) {
+                          HapticFeedbackUtil.light();
+
+                          if (item.id !=
+                              context.read<EditCubit>().state.replyingTo?.id) {
+                            commentEditingController.clear();
+                          }
+                          context.read<EditCubit>().onReplyTapped(item);
+                        },
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                        icon: Icons.message,
+                      ),
                     ),
-                    child: Row(
-                      children: <Widget>[
-                        Text(
-                          item.by,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          textScaler: MediaQuery.of(context).textScaler,
-                        ),
-                        const Spacer(),
-                        Text(
-                          context
-                              .read<PreferenceCubit>()
-                              .state
-                              .displayDateFormat
-                              .convertToString(item.time),
-                          style: TextStyle(
-                            color: Theme.of(context).metadataColor,
-                          ),
-                          textScaler: MediaQuery.of(context).textScaler,
-                        ),
-                      ],
+                    Semantics(
+                      label: 'More actions',
+                      button: true,
+                      child: SlidableAction(
+                        onPressed: (BuildContext context) =>
+                            onMoreTapped(item, context.rect),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                        icon: Icons.more_horiz,
+                      ),
                     ),
-                  ),
-                  BlocBuilder<PreferenceCubit, PreferenceState>(
-                    buildWhen: (
-                      PreferenceState previous,
-                      PreferenceState current,
-                    ) =>
-                        previous.fontSize != current.fontSize,
-                    builder: (
-                      BuildContext context,
-                      PreferenceState prefState,
-                    ) {
-                      final double fontSize = prefState.fontSize.fontSize;
-                      return Column(
+                  ],
+                ),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: Dimens.pt6,
+                        right: Dimens.pt6,
+                      ),
+                      child: Row(
                         children: <Widget>[
-                          if (item is Story)
-                            InkWell(
-                              onTap: () => LinkUtil.launch(
-                                item.url,
-                                context,
-                                useReader: context
-                                    .read<PreferenceCubit>()
-                                    .state
-                                    .isReaderEnabled,
-                                offlineReading: context
-                                    .read<StoriesBloc>()
-                                    .state
-                                    .isOfflineReading,
-                              ),
-                              onLongPress: () {
-                                if (item.url.isNotEmpty) {
-                                  Clipboard.setData(
-                                    ClipboardData(text: item.url),
-                                  ).whenComplete(() {
-                                    HapticFeedbackUtil.selection();
-                                    if (context.mounted) {
-                                      context.showSnackBar(
-                                        content: 'Link copied.',
-                                      );
-                                    }
-                                  });
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: Dimens.pt6,
-                                  right: Dimens.pt6,
-                                  bottom: Dimens.pt12,
-                                  top: Dimens.pt6,
-                                ),
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                        semanticsLabel: item.title,
-                                        text: item.title,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: fontSize,
-                                          color: item.url.isNotEmpty
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                              : null,
-                                        ),
-                                      ),
-                                      if (item.url.isNotEmpty)
-                                        TextSpan(
-                                          text: ''' (${item.readableUrl})''',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: fontSize - 4,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  textScaler: MediaQuery.of(context).textScaler,
-                                ),
-                              ),
-                            )
-                          else
-                            const SizedBox(
-                              height: Dimens.pt6,
+                          Text(
+                            item.by,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                          if (item.text.isNotEmpty)
-                            FadeIn(
-                              child: SizedBox(
-                                width: double.infinity,
+                            textScaler: MediaQuery.of(context).textScaler,
+                          ),
+                          const Spacer(),
+                          Text(
+                            context
+                                .read<PreferenceCubit>()
+                                .state
+                                .displayDateFormat
+                                .convertToString(item.time),
+                            style: TextStyle(
+                              color: Theme.of(context).metadataColor,
+                            ),
+                            textScaler: MediaQuery.of(context).textScaler,
+                          ),
+                        ],
+                      ),
+                    ),
+                    BlocBuilder<PreferenceCubit, PreferenceState>(
+                      buildWhen: (
+                        PreferenceState previous,
+                        PreferenceState current,
+                      ) =>
+                          previous.fontSize != current.fontSize,
+                      builder: (
+                        BuildContext context,
+                        PreferenceState prefState,
+                      ) {
+                        final double fontSize = prefState.fontSize.fontSize;
+                        return Column(
+                          children: <Widget>[
+                            if (item is Story)
+                              InkWell(
+                                onTap: () => LinkUtil.launch(
+                                  item.url,
+                                  context,
+                                  useReader: context
+                                      .read<PreferenceCubit>()
+                                      .state
+                                      .isReaderEnabled,
+                                  offlineReading: context
+                                      .read<StoriesBloc>()
+                                      .state
+                                      .isOfflineReading,
+                                ),
+                                onLongPress: () {
+                                  if (item.url.isNotEmpty) {
+                                    Clipboard.setData(
+                                      ClipboardData(text: item.url),
+                                    ).whenComplete(() {
+                                      HapticFeedbackUtil.selection();
+                                      if (context.mounted) {
+                                        context.showSnackBar(
+                                          content: 'Link copied.',
+                                        );
+                                      }
+                                    });
+                                  }
+                                },
                                 child: Padding(
                                   padding: const EdgeInsets.only(
-                                    left: Dimens.pt8,
+                                    left: Dimens.pt6,
+                                    right: Dimens.pt6,
+                                    bottom: Dimens.pt12,
+                                    top: Dimens.pt6,
                                   ),
-                                  child: ItemText(
-                                    item: item,
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          semanticsLabel: item.title,
+                                          text: item.title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: fontSize,
+                                            color: item.url.isNotEmpty
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : null,
+                                          ),
+                                        ),
+                                        if (item.url.isNotEmpty)
+                                          TextSpan(
+                                            text: ''' (${item.readableUrl})''',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: fontSize - 4,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
                                     textScaler:
                                         MediaQuery.of(context).textScaler,
-                                    selectable: true,
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(
+                                height: Dimens.pt6,
+                              ),
+                            if (item.text.isNotEmpty)
+                              FadeIn(
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: Dimens.pt8,
+                                    ),
+                                    child: ItemText(
+                                      item: item,
+                                      textScaler:
+                                          MediaQuery.of(context).textScaler,
+                                      selectable: true,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                  if (item is Story && item.isPoll)
-                    BlocProvider<PollCubit>(
-                      create: (BuildContext context) =>
-                          PollCubit(story: item)..init(),
-                      child: const PollView(),
+                          ],
+                        );
+                      },
                     ),
-                ],
+                    if (item is Story && item.isPoll)
+                      BlocProvider<PollCubit>(
+                        create: (BuildContext context) =>
+                            PollCubit(story: item)..init(),
+                        child: const PollView(),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

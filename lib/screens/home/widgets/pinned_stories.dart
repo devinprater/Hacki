@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -26,36 +27,45 @@ class PinnedStories extends StatelessWidget {
           children: <Widget>[
             for (final Story story in state.pinnedStories)
               FadeIn(
-                child: Slidable(
-                  startActionPane: ActionPane(
-                    motion: const BehindMotion(),
-                    children: <Widget>[
-                      SlidableAction(
-                        onPressed: (_) {
-                          HapticFeedbackUtil.light();
-                          context.read<PinCubit>().unpinStory(story);
-                        },
-                        backgroundColor: Palette.red,
-                        foregroundColor: Palette.white,
-                        icon: preferenceState.isComplexStoryTileEnabled
-                            ? Icons.close
-                            : null,
-                        label: 'Unpin',
-                      ),
-                    ],
-                  ),
-                  child: ColoredBox(
-                    color: Theme.of(context).colorScheme.primary.withValues(
-                          alpha: 0.2,
+                child: Semantics(
+                  customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
+                    const CustomSemanticsAction(label: 'Unpin story'): () {
+                      HapticFeedbackUtil.light();
+                      context.read<PinCubit>().unpinStory(story);
+                    },
+                  },
+                  child: Slidable(
+                    startActionPane: ActionPane(
+                      motion: const BehindMotion(),
+                      children: <Widget>[
+                        SlidableAction(
+                          onPressed: (_) {
+                            HapticFeedbackUtil.light();
+                            context.read<PinCubit>().unpinStory(story);
+                          },
+                          backgroundColor: Palette.red,
+                          foregroundColor: Palette.white,
+                          icon: preferenceState.isComplexStoryTileEnabled
+                              ? Icons.close
+                              : null,
+                          label: 'Unpin',
                         ),
-                    child: StoryTile(
-                      key: ValueKey<String>('${story.id}-PinnedStoryTile'),
-                      story: story,
-                      onTap: () => onStoryTapped(story),
-                      showWebPreview: preferenceState.isComplexStoryTileEnabled,
-                      showMetadata: preferenceState.isMetadataEnabled,
-                      showUrl: preferenceState.isUrlEnabled,
-                      showFavicon: preferenceState.isFaviconEnabled,
+                      ],
+                    ),
+                    child: ColoredBox(
+                      color: Theme.of(context).colorScheme.primary.withValues(
+                            alpha: 0.2,
+                          ),
+                      child: StoryTile(
+                        key: ValueKey<String>('${story.id}-PinnedStoryTile'),
+                        story: story,
+                        onTap: () => onStoryTapped(story),
+                        showWebPreview:
+                            preferenceState.isComplexStoryTileEnabled,
+                        showMetadata: preferenceState.isMetadataEnabled,
+                        showUrl: preferenceState.isUrlEnabled,
+                        showFavicon: preferenceState.isFaviconEnabled,
+                      ),
                     ),
                   ),
                 ),

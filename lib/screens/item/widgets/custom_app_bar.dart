@@ -28,6 +28,9 @@ class CustomAppBar extends AppBar {
                       : FeatherIcons.maximize2,
                   size: TextDimens.pt20,
                 ),
+                tooltip: (expanded ?? false)
+                    ? 'Collapse split view'
+                    : 'Expand split view',
                 onPressed: () {
                   HapticFeedbackUtil.light();
                   onZoomTap?.call();
@@ -49,6 +52,7 @@ class CustomAppBar extends AppBar {
                 ),
                 textScaler: TextScaler.noScaling,
               ),
+              tooltip: 'Change font size',
               onPressed: onFontSizeTap,
             ),
             if (item is Story)

@@ -55,6 +55,7 @@ class _SubmitScreenState extends State<SubmitScreen> with ItemActionMixin {
                 Icons.close,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
+              tooltip: 'Close submit',
               onPressed: () {
                 // Don't show confirmation dialog if content is empty.
                 if (state.text.isNullOrEmpty &&
@@ -122,6 +123,7 @@ class _SubmitScreenState extends State<SubmitScreen> with ItemActionMixin {
                     Icons.send,
                     color: Theme.of(context).colorScheme.primary,
                   ),
+                  tooltip: 'Submit post',
                   onPressed: () {
                     showDialog<bool>(
                       context: context,
@@ -159,6 +161,7 @@ class _SubmitScreenState extends State<SubmitScreen> with ItemActionMixin {
                     Icons.send,
                     color: Palette.grey,
                   ),
+                  tooltip: 'Submit post',
                   onPressed: () {},
                 ),
             ],

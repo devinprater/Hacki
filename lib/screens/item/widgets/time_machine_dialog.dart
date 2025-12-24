@@ -57,6 +57,7 @@ class TimeMachineDialog extends StatelessWidget {
                               Icons.close,
                               size: Dimens.pt16,
                             ),
+                            tooltip: 'Close',
                             onPressed: () => context.pop(),
                             padding: EdgeInsets.zero,
                           ),
